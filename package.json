@@ -21,7 +21,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "example": "npm run dev --prefix example",
+    "example:build": "npm run build --prefix example"
   },
   "keywords": [
     "react",

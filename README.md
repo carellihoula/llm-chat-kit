@@ -107,6 +107,30 @@ export function DocumentationPage({ markdownText }: { markdownText: string }) {
 
 ---
 
+## 🖥️ Interactive Demo & Example
+
+An interactive demo is included in the [`example/`](./example) directory showcasing LaTeX math equations (SGD, Adam), code syntax highlighting with theme switching, tables, and streaming generation.
+
+To run the example locally:
+
+```bash
+git clone https://github.com/carellihoula/llm-chat-kit.git
+cd llm-chat-kit
+
+# Install dependencies and build library
+npm install
+npm run build
+
+# Install example dependencies and launch
+cd example
+npm install
+npm run dev
+```
+
+Then open `http://localhost:5173/` in your browser.
+
+---
+
 ## 🛠️ Building & Development
 
 To develop or build the package locally:
