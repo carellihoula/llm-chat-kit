@@ -6,7 +6,6 @@ Production-ready, battle-tested React chat UI kit for AI agents and LLM applicat
 
 ## ✨ Features
 
-- 📐 **Full LaTeX Math Support**: Inline `$E = mc^2$` and block `$$...$$` equations, environments (`\begin{aligned}`), and automated LLM delimiter normalization (`\[ \]`, `\( \)`).
 - ⚡ **Streaming Stabilization**: Eliminates UI layout shifts and unclosed code block flicker during token streaming.
 - 🎨 **Syntax Highlighting**: Highlight.js code blocks with dark/light theme toggle, language tags, and neutral copy-to-clipboard buttons.
 - 💬 **Conversation Components**:
@@ -14,6 +13,7 @@ Production-ready, battle-tested React chat UI kit for AI agents and LLM applicat
   - `<ChatMessageItem />`: Sleek user message bubbles and wide assistant canvas.
   - `<ChatInput />`: Auto-expanding textarea, `Enter` / `Shift+Enter` handling, and Stop/Send controls.
 - 📦 **Modern Bundle**: Full ESM + CJS output, TypeScript declaration maps (`.d.ts`), and `"use client"` compatibility for Next.js App Router.
+- 📐 **Full LaTeX Math Support**: Inline `$E = mc^2$` and block `$$...$$` equations, environments (`\begin{aligned}`), and automated LLM delimiter normalization (`\[ \]`, `\( \)`).
 
 ---
 
