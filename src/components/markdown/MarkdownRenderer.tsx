@@ -1,0 +1,153 @@
+import React, { memo, useMemo } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
+import rehypeKatex from "rehype-katex";
+import { cn, cleanSerializedContentBlocks } from "../../utils";
+import { MarkdownRendererProps } from "./types";
+import { processStreamingCodeBlocks, normalizeLatexMath } from "./markdownUtils";
+import { CodePreBlock } from "./CodePreBlock";
+import { TableBlock } from "./TableBlock";
+import { InlineCodeBlock } from "./InlineCodeBlock";
+
+/**
+ * Enterprise Markdown Renderer with KaTeX LaTeX math support,
+ * Highlight.js syntax highlighting, streaming stabilization, and table copy capabilities.
+ *
+ * Args:
+ *     content (string): Raw markdown content string to render.
+ *     isStreaming (boolean, optional): Whether active streaming is occurring. Defaults to False.
+ *     className (string, optional): Supplementary wrapper CSS classes.
+ *
+ * Returns:
+ *     React.ReactElement: The rendered Markdown tree.
+ */
+const MarkdownRendererBase: React.FC<MarkdownRendererProps> = ({
+  content,
+  isStreaming = false,
+  className,
+}) => {
+  // [Preprocessing] Clean synthetic serialized artifacts, normalize LaTeX delimiters, and stabilize streaming code blocks
+  const processedContent = useMemo(() => {
+    const cleaned = cleanSerializedContentBlocks(content || "");
+    const mathNormalized = normalizeLatexMath(cleaned);
+    return processStreamingCodeBlocks(mathNormalized, isStreaming);
+  }, [content, isStreaming]);
+
+  return (
+    <div
+      className={cn(
+        "prose prose-zinc max-w-none text-zinc-800 text-sm leading-relaxed break-words",
+        className
+      )}
+    >
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeRaw, [rehypeKatex, { throwOnError: false }], rehypeHighlight]}
+        components={{
+          h1: ({ children }) => (
+            <h1 className="text-lg font-bold text-zinc-900 mt-5 mb-2.5 pb-1 border-b border-zinc-200">
+              {children}
+            </h1>
+          ),
+          h2: ({ children }) => (
+            <h2 className="text-base font-semibold text-zinc-900 mt-4 mb-2 pb-0.5 border-b border-zinc-100">
+              {children}
+            </h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-sm font-semibold text-zinc-800 mt-3.5 mb-1.5">
+              {children}
+            </h3>
+          ),
+          p: ({ children }) => <p className="my-2 leading-relaxed">{children}</p>,
+          hr: () => (
+            <hr className="my-3.5 border-0 border-t border-zinc-200/60 dark:border-zinc-800/80" />
+          ),
+          ul: ({ children }) => (
+            <ul className="my-2 ml-4 list-disc space-y-1 text-zinc-700">
+              {children}
+            </ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="my-2 ml-4 list-decimal space-y-1 text-zinc-700">
+              {children}
+            </ol>
+          ),
+          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          blockquote: ({ children }) => (
+            <blockquote className="my-3 pl-3.5 border-l-2 border-zinc-900 bg-zinc-50 py-2 text-zinc-700 rounded-r-sm italic text-sm">
+              {children}
+            </blockquote>
+          ),
+          table: ({ children }) => <TableBlock>{children}</TableBlock>,
+          thead: ({ children }) => (
+            <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-700 font-semibold text-xs uppercase tracking-wider">
+              {children}
+            </thead>
+          ),
+          tbody: ({ children }) => (
+            <tbody className="divide-y divide-zinc-200 bg-white">{children}</tbody>
+          ),
+          tr: ({ children }) => (
+            <tr className="hover:bg-zinc-50/80 transition-colors">{children}</tr>
+          ),
+          th: ({ children }) => (
+            <th className="px-3.5 py-2.5 font-medium">{children}</th>
+          ),
+          td: ({ children }) => (
+            <td className="px-3.5 py-2 text-zinc-600">{children}</td>
+          ),
+          a: ({ href, children }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-900 hover:text-zinc-600 underline underline-offset-2 font-medium"
+            >
+              {children}
+            </a>
+          ),
+          img: ({ src, alt, ...props }) => {
+            // [Validation] Guard against empty src strings which trigger React 19 console errors and redundant page reloads
+            if (!src || typeof src !== "string" || src.trim() === "") {
+              return null;
+            }
+            return (
+              <img
+                src={src}
+                alt={alt || ""}
+                loading="lazy"
+                className="max-w-full h-auto rounded-md my-2"
+                {...props}
+              />
+            );
+          },
+          code: ({ className: codeClassName, children, ...props }) => {
+            const isInline = !codeClassName;
+            if (isInline) {
+              return <InlineCodeBlock {...props}>{children}</InlineCodeBlock>;
+            }
+            return (
+              <code className={codeClassName} {...props}>
+                {children}
+              </code>
+            );
+          },
+          pre: ({ children, node, ...props }) => (
+            <CodePreBlock node={node} {...props}>
+              {children}
+            </CodePreBlock>
+          ),
+        }}
+      >
+        {processedContent}
+      </ReactMarkdown>
+    </div>
+  );
+};
+
+export const MarkdownRenderer = memo(MarkdownRendererBase);
+export default MarkdownRenderer;
